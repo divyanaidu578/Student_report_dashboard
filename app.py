@@ -193,7 +193,6 @@ def main_app():
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     df_processed.to_excel(writer, index=False, sheet_name='ProcessedData')
-                    writer.save()
                     processed_data = output.getvalue()
 
                 st.download_button(
@@ -223,3 +222,4 @@ if not st.session_state['logged_in']:
     login()
 else:
     main_app()
+
