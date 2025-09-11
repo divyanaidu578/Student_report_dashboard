@@ -1,7 +1,7 @@
 import streamlit as st
-import plotly.express as px
 import pandas as pd
-from io import BytesIO  # Moved here to top
+import plotly.express as px
+from io import BytesIO  # Correctly placed at top
 
 # Always set this at top
 st.set_page_config(page_title="Student Records Dashboard", page_icon="🎓", layout="wide")
@@ -22,7 +22,7 @@ def login():
             st.experimental_rerun()
         else:
             st.error("Invalid username or password")
- 
+
 @st.cache_data
 def generate_template():
     columns = [
@@ -35,7 +35,7 @@ def generate_template():
     output = BytesIO()
     df.to_excel(output, index=False)
     return output.getvalue()
- 
+
 def calculate_formulas(df):
     # Ensure numeric columns for calculation
     num_cols = [
@@ -46,7 +46,7 @@ def calculate_formulas(df):
         if col not in df.columns:
             df[col] = 0
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
- 
+
     df['Stu_Total_Marks'] = df['Stu_Internal_marks'] + df['Stu_external_Marks']
     df['Stu_Grade'] = df['Stu_Total_Marks'].apply(lambda x: 'A+' if x>=90 else 'A' if x>=80 else 'B' if x>=70 else 'C' if x>=60 else 'F')
     df['Stu_GPA_Sub'] = df['Stu_external_Marks'].apply(lambda x: 10 if x>=90 else 9 if x>=80 else 8 if x>=70 else 7 if x>=60 else 6 if x>=50 else 5 if x>=40 else 0)
@@ -57,7 +57,7 @@ def calculate_formulas(df):
     df['Stu_fee_due'] = df['Stu_tution_Fees'] - df['Stu_fee_paid']
     df['Stu_payment_status'] = df['Stu_fee_due'].apply(lambda x: "Paid" if x <= 0 else "Pending")
     return df
- 
+
 def main_app():
     # Header and logout
     col_left, col_right = st.columns([9, 1])
@@ -73,11 +73,11 @@ def main_app():
             st.session_state["logged_in"] = False
             st.success("Logged out successfully.")
             st.experimental_rerun()
-        
+
     st.markdown("<p style='font-size:16px; color:#5a7d7c; margin-top:-10px;'>"
         "Upload your student data Excel file below to see processed academic and financial results, "
         "with live analytics and detailed insights.</p>", unsafe_allow_html=True)
-    
+
     # Template download
     template_data = generate_template()
     st.download_button("⬇️ Download Empty Student Data Template",
@@ -85,7 +85,7 @@ def main_app():
         file_name="student_data_template.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
- 
+
     uploaded_file = st.file_uploader("Upload Student Data Excel", type=['xls', 'xlsx'])
     if uploaded_file:
         try:
@@ -98,32 +98,32 @@ def main_app():
                 st.stop()
             st.markdown("### Raw Input Data")
             st.dataframe(df_input, use_container_width=True)
- 
+
             df_processed = calculate_formulas(df_input)
             st.markdown("### Processed Data")
             st.dataframe(df_processed, use_container_width=True)
- 
-            # Set up sidebar filters, always checks if column exists
+
+            # Set up filters
             depts = sorted(df_processed['Stud_Department'].dropna().unique()) if 'Stud_Department' in df_processed.columns else []
             years = sorted(df_processed['Stu_Year'].dropna().unique()) if 'Stu_Year' in df_processed.columns else []
             names = sorted(df_processed['Stu_name'].dropna().unique()) if 'Stu_name' in df_processed.columns else []
             semesters = sorted(df_processed['Stu_Semester'].dropna().unique()) if 'Stu_Semester' in df_processed.columns else []
- 
+
             st.sidebar.header("Filter Analytics")
             dept_filter = st.sidebar.multiselect("Department", depts, default=depts)
             year_filter = st.sidebar.multiselect("Academic Year", years, default=years)
             name_filter = st.sidebar.multiselect("Student", names, default=names)
             sem_filter = st.sidebar.multiselect("Semester", semesters, default=semesters)
- 
+
             df_filtered = df_processed
-            if depts: df_filtered = df_filtered[df_filtered['Stud_Department'].isin(dept_filter)]
-            if years: df_filtered = df_filtered[df_filtered['Stu_Year'].isin(year_filter)]
-            if names: df_filtered = df_filtered[df_filtered['Stu_name'].isin(name_filter)]
-            if semesters: df_filtered = df_filtered[df_filtered['Stu_Semester'].isin(sem_filter)]
- 
+            if dept_filter: df_filtered = df_filtered[df_filtered['Stud_Department'].isin(dept_filter)]
+            if year_filter: df_filtered = df_filtered[df_filtered['Stu_Year'].isin(year_filter)]
+            if name_filter: df_filtered = df_filtered[df_filtered['Stu_name'].isin(name_filter)]
+            if sem_filter: df_filtered = df_filtered[df_filtered['Stu_Semester'].isin(sem_filter)]
+
             st.markdown("---")
             st.markdown("## Live Analytics")
- 
+
             if len(df_filtered) == 0:
                 st.warning("Filtered data is empty. Adjust filters or check your Excel file.")
             else:
@@ -134,7 +134,7 @@ def main_app():
                     fig1 = px.pie(grade_counts, names='Grade', values='Count',
                         title='Grade Distribution', color_discrete_sequence=px.colors.qualitative.Pastel)
                     st.plotly_chart(fig1, use_container_width=True)
- 
+
                 # Attendance Status Bar Chart
                 if 'Stu_Attendance_status' in df_filtered.columns:
                     attendance_counts = df_filtered['Stu_Attendance_status'].value_counts().reset_index()
@@ -143,20 +143,20 @@ def main_app():
                         title='Attendance Status', color='Attendance Status',
                         color_discrete_map={"Eligible": "green", "Not Eligible": "red"})
                     st.plotly_chart(fig2, use_container_width=True)
- 
-                # Attendance Percentage Histogram
-               import plotly.express as px
 
-fig_attendance_dist = px.histogram(
-    df_filtered,
-    x='Stu_attended_percentage',
-    nbins=20,
-    title='Attendance Percentage Distribution',
-    color_discrete_sequence=['#44b78b']
-)
-fig_attendance_dist.update_xaxes(title="Attendance Percentage (%)")
-fig_attendance_dist.update_yaxes(title="Number of Students")
-st.plotly_chart(fig_attendance_dist, use_container_width=True)
+                # Attendance Percentage Histogram
+                if 'Stu_attended_percentage' in df_filtered.columns:
+                    fig_attendance_dist = px.histogram(
+                        df_filtered,
+                        x='Stu_attended_percentage',
+                        nbins=20,
+                        title='Attendance Percentage Distribution',
+                        color_discrete_sequence=['#44b78b']
+                    )
+                    fig_attendance_dist.update_xaxes(title="Attendance Percentage (%)")
+                    fig_attendance_dist.update_yaxes(title="Number of Students")
+                    st.plotly_chart(fig_attendance_dist, use_container_width=True)
+
                 # Payment Status Bar Chart
                 if 'Stu_payment_status' in df_filtered.columns:
                     payment_counts = df_filtered['Stu_payment_status'].value_counts().reset_index()
@@ -166,7 +166,7 @@ st.plotly_chart(fig_attendance_dist, use_container_width=True)
                         color='Payment Status',
                         color_discrete_map={"Paid": "green", "Pending": "orange"})
                     st.plotly_chart(fig3, use_container_width=True)
- 
+
                 # Outstanding Fee Amounts per Student
                 if 'Stu_fee_due' in df_filtered.columns and 'Stu_name' in df_filtered.columns:
                     fig_fees_due = px.bar(
@@ -180,25 +180,22 @@ st.plotly_chart(fig_attendance_dist, use_container_width=True)
                     fig_fees_due.update_xaxes(title="Student Name")
                     fig_fees_due.update_yaxes(title="Outstanding Fees (INR)")
                     st.plotly_chart(fig_fees_due, use_container_width=True)
- 
-                # Total Paid vs Pending Fees Pie
-               fee_summary = df_filtered.groupby('Stu_payment_status')['Stu_fee_due'].sum().reset_index()
 
-import plotly.express as px
+                # Total Paid vs Pending Fees Pie Chart
+                if 'Stu_payment_status' in df_filtered.columns and 'Stu_fee_due' in df_filtered.columns:
+                    fee_summary = df_filtered.groupby('Stu_payment_status')['Stu_fee_due'].sum().reset_index()
+                    fig_fee_summary = px.pie(
+                        fee_summary,
+                        names='Stu_payment_status',
+                        values='Stu_fee_due',
+                        title='Total Paid vs Pending Fees',
+                        color='Stu_payment_status',
+                        color_discrete_map={'Paid': 'green', 'Pending': 'orange'}
+                    )
+                    fig_fee_summary.update_traces(textinfo='percent+label')
+                    st.plotly_chart(fig_fee_summary, use_container_width=True)
 
-fig_fee_summary = px.pie(
-    fee_summary,
-    names='Stu_payment_status',
-    values='Stu_fee_due',
-    title='Total Paid vs Pending Fees',
-    color='Stu_payment_status',
-    color_discrete_map={'Paid': 'green', 'Pending': 'orange'}
-)
-
-fig_fee_summary.update_traces(textinfo='percent+label')
-fig_fee_summary.show()
- 
-            # Download processed file (no .save() or .close())
+            # Download processed file
             output = BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                 df_processed.to_excel(writer, index=False, sheet_name='ProcessedData')
@@ -209,24 +206,19 @@ fig_fee_summary.show()
                 file_name="processed_student_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
- 
+
         except Exception as e:
             st.error(f"Error: {e}")
     else:
         st.info("Upload an Excel file to begin processing and see analytics.")
- 
+
     st.markdown("---\n<div style='font-size:12px; color:gray; text-align:center;'>Developed by 🎓</div>", unsafe_allow_html=True)
- 
+
 # Session state initialization
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
- 
+
 if not st.session_state['logged_in']:
     login()
 else:
     main_app()
-
-
-
-
-
