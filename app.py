@@ -1,15 +1,15 @@
 import streamlit as st
 import pandas as pd
-# Correct top-level import
 import plotly.express as px
+from io import BytesIO  # Moved here to top
 
-def some_function():
-    # function code indented here
-from io import BytesIO
- 
 # Always set this at top
 st.set_page_config(page_title="Student Records Dashboard", page_icon="🎓", layout="wide")
- 
+
+def some_function():
+    # Add function code here
+    pass
+
 def login():
     st.title("🔐 Login to Student Records Dashboard")
     username = st.text_input("Username")
@@ -225,6 +225,7 @@ if not st.session_state['logged_in']:
     login()
 else:
     main_app()
+
 
 
 
