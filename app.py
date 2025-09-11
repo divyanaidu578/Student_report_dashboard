@@ -12,14 +12,17 @@ def some_function():
 
 def login():
     st.title("🔐 Login to Student Records Dashboard")
+    
     username = st.text_input("Username")
     password = st.text_input("Password", type='password')
     login_button = st.button("Login")
+
     if login_button:
         if username == "admin" and password == "password123":
             st.session_state["logged_in"] = True
             st.success("Login successful! Redirecting...")
-            st.experimental_rerun()
+            st.experimental_rerun()  # After state update, rerun to refresh UI
+            return  # Ensure function ends here after rerun
         else:
             st.error("Invalid username or password")
 
@@ -222,3 +225,4 @@ if not st.session_state['logged_in']:
     login()
 else:
     main_app()
+
