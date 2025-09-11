@@ -141,18 +141,18 @@ def main_app():
                     st.plotly_chart(fig2, use_container_width=True)
  
                 # Attendance Percentage Histogram
-                if 'Stu_attended_percentage' in df_filtered.columns:
-                    fig_attendance_dist = px.histogram(
-                        df_filtered,
-                        x='Stu_attended_percentage',
-                        nbins=20,
-                        title='Attendance Percentage Distribution',
-                        color_discrete_sequence=['#44b78b']
-                    )
-                    fig_attendance_dist.update_xaxes(title="Attendance Percentage (%)")
-                    fig_attendance_dist.update_yaxes(title="Number of Students")
-                    st.plotly_chart(fig_attendance_dist, use_container_width=True)
- 
+               import plotly.express as px
+
+fig_attendance_dist = px.histogram(
+    df_filtered,
+    x='Stu_attended_percentage',
+    nbins=20,
+    title='Attendance Percentage Distribution',
+    color_discrete_sequence=['#44b78b']
+)
+fig_attendance_dist.update_xaxes(title="Attendance Percentage (%)")
+fig_attendance_dist.update_yaxes(title="Number of Students")
+st.plotly_chart(fig_attendance_dist, use_container_width=True)
                 # Payment Status Bar Chart
                 if 'Stu_payment_status' in df_filtered.columns:
                     payment_counts = df_filtered['Stu_payment_status'].value_counts().reset_index()
@@ -178,16 +178,21 @@ def main_app():
                     st.plotly_chart(fig_fees_due, use_container_width=True)
  
                 # Total Paid vs Pending Fees Pie
-                if 'Stu_payment_status' in df_filtered.columns and 'Stu_fee_due' in df_filtered.columns:
-                    fee_summary = df_filtered.groupby('Stu_payment_status')['Stu_fee_due'].sum().reset_index()
-                    fig_fee_summary = px.pie(
-                        fee_summary,
-                        names='Stu_payment_status',
-                        values='Stu_fee_due',
-                        title='Total Paid vs Pending Fees',
-                        color='Stu_payment_status',
-                        color_discrete_map={'Paid': 'green', 'Pending': 'orange'})
-                    st.plotly_chart(fig_fee_summary, use_container_width=True)
+               fee_summary = df_filtered.groupby('Stu_payment_status')['Stu_fee_due'].sum().reset_index()
+
+import plotly.express as px
+
+fig_fee_summary = px.pie(
+    fee_summary,
+    names='Stu_payment_status',
+    values='Stu_fee_due',
+    title='Total Paid vs Pending Fees',
+    color='Stu_payment_status',
+    color_discrete_map={'Paid': 'green', 'Pending': 'orange'}
+)
+
+fig_fee_summary.update_traces(textinfo='percent+label')
+fig_fee_summary.show()
  
             # Download processed file (no .save() or .close())
             output = BytesIO()
@@ -216,4 +221,5 @@ if not st.session_state['logged_in']:
     login()
 else:
     main_app()
+
 
