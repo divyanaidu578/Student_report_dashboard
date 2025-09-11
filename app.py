@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
+# Correct top-level import
 import plotly.express as px
+
+def some_function():
+    # function code indented here
 from io import BytesIO
  
 # Always set this at top
@@ -221,5 +225,6 @@ if not st.session_state['logged_in']:
     login()
 else:
     main_app()
+
 
 
