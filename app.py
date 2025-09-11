@@ -20,9 +20,8 @@ def login():
     if login_button:
         if username == "admin" and password == "password123":
             st.session_state["logged_in"] = True
-            st.success("Login successful! Redirecting...")
-            st.experimental_rerun()  # After state update, rerun to refresh UI
-            return  # Ensure function ends here after rerun
+            st.success("Login successful! Please wait...")
+            # No explicit rerun here — rely on Streamlit state change rerunning script naturally
         else:
             st.error("Invalid username or password")
 
@@ -221,8 +220,9 @@ def main_app():
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-if not st.session_state['logged_in']:
-    login()
-else:
+if st.session_state['logged_in']:
     main_app()
+else:
+    login()
+
 
