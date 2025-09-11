@@ -19,7 +19,7 @@ def login():
         else:
             st.error("Invalid username or password")
  
-@st.cache
+@st.cache_data
 def generate_template():
     columns = [
         "Stu_ID","Stu_name","Stu_Gender","Stu_DOB","Stu_AGE","Stu_Email","Stu_Phone_No","Stu_Address",
@@ -216,3 +216,4 @@ if not st.session_state['logged_in']:
     login()
 else:
     main_app()
+
